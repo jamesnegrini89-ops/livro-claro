@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#173d56">
+  <meta name="description" content="Sua leitura, com tempo para entender. Bíblia em português e livros em PDF com narração e perguntas ao Gemini.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://generativelanguage.googleapis.com; media-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <title>Livro Claro — ler, ouvir e entender</title>
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#reader">Ir para a leitura</a>
+  <header class="topbar"><a class="brand" href="./" aria-label="Livro Claro, início"><img src="icons/icon.svg" width="36" height="36" alt=""><span>livro <b>claro</b></span></a><div class="top-actions"><button id="installButton" class="ghost" hidden>Instalar</button><a class="ghost help-link" href="COMECAR.html" target="_blank" rel="noopener">Ajuda</a><button id="settingsButton" class="ghost">Configurações</button></div></header>
+  <main class="workspace">
+    <aside class="library-panel" aria-label="Escolha sua leitura">
+      <div class="eyebrow">SEU ESPAÇO DE LEITURA</div><h1>Um trecho de cada vez.</h1>
+      <div class="source-tabs" role="tablist" aria-label="Tipo de leitura"><button id="bibleTab" role="tab" aria-selected="true" aria-controls="biblePanel">Bíblia</button><button id="pdfTab" role="tab" aria-selected="false" aria-controls="pdfPanel">Meus PDFs</button></div>
+      <section id="biblePanel" role="tabpanel" aria-labelledby="bibleTab">
+        <p class="edition">Bíblia Livre · Português</p>
+        <label for="bibleBook">Livro</label><select id="bibleBook"><option>Carregando livros…</option></select>
+        <div class="range-grid"><div><label for="startChapter">Capítulo inicial</label><select id="startChapter"></select></div><div><label for="startVerse">Versículo inicial</label><select id="startVerse"></select></div><div><label for="endChapter">Capítulo final</label><select id="endChapter"></select></div><div><label for="endVerse">Versículo final</label><select id="endVerse"></select></div></div>
+        <button id="openBible" class="primary wide">Abrir trecho</button>
+      </section>
+      <section id="pdfPanel" role="tabpanel" aria-labelledby="pdfTab" hidden>
+        <label class="upload" for="pdfFile"><span class="upload-symbol">+</span><strong>Adicionar um livro</strong><span>Escolha um PDF do aparelho</span><input id="pdfFile" type="file" accept="application/pdf,.pdf"></label>
+        <p id="importStatus" class="small" role="status"></p>
+        <label for="pdfBook">Seus livros</label><select id="pdfBook"><option value="">Nenhum PDF adicionado</option></select>
+        <div class="range-grid"><div><label for="pdfStart">Da página</label><input id="pdfStart" type="number" min="1" value="1"></div><div><label for="pdfEnd">Até a página</label><input id="pdfEnd" type="number" min="1" value="1"></div></div>
+        <button id="openPdf" class="primary wide">Abrir páginas</button><button id="deletePdf" class="link-button wide">Remover este PDF do aparelho</button>
+      </section>
+      <div class="sidebar-note"><span class="small-mark" aria-hidden="true">↳</span><p>Você escolhe o ritmo.<br>Pare para perguntar quando precisar.</p></div>
+      <button id="lastStudy" class="resume-card" hidden><span>RETOMAR MEU ESTUDO</span><strong id="lastStudyLabel"></strong><small>Continuar do ponto salvo</small></button>
+      <div class="local-note">Seu progresso fica neste aparelho.<br><a href="COMECAR.html#privacidade" target="_blank" rel="noopener">Como meus dados são usados?</a></div>
+    </aside>
+    <section class="reading-panel" aria-label="Leitura atual">
+      <div class="reading-top"><div><p id="readingKicker" class="eyebrow">BÍBLIA LIVRE</p><h2 id="readingTitle">Preparando sua leitura…</h2></div><span id="offlineBadge" class="badge" hidden>Sem internet</span></div>
+      <div class="mode-row"><label for="studyMode">Como quer estudar?</label><select id="studyMode"><option value="read">Ler e perguntar quando eu pausar</option><option value="guided">Ler e explicar cada parte</option></select></div>
+      <div id="notice" class="notice" role="status" hidden></div>
+      <div id="reader" class="reader" tabindex="0" aria-label="Texto da leitura"></div>
+      <div id="scanPanel" class="scan-panel" hidden><p>Esta página tem pouco ou nenhum texto selecionável.</p><button id="recognizePage" class="secondary">Reconhecer esta página com Gemini</button><p class="small">Envia a imagem desta página ao Google. Usa a cota de texto/imagem.</p></div>
+      <details id="originalPanel" class="original-panel" hidden><summary>Ver a página original do PDF</summary><canvas id="pdfCanvas" aria-label="Página original do PDF"></canvas></details>
+      <div id="completed" class="completed" hidden><strong>Trecho concluído.</strong><p>Você chegou ao ponto final escolhido.</p><button id="sessionSummary" class="secondary">Explicar os pontos principais</button></div>
+      <footer class="reader-footer"><span id="positionLabel"></span><a href="CREDITOS.html" target="_blank" rel="noopener">Fonte e créditos</a></footer>
+      <section class="player" aria-label="Controles da leitura"><div class="player-info"><span id="playerStatus" aria-live="polite">Pronto para ler</span><span id="voiceStatus">Voz do celular</span></div><progress id="readingProgress" value="0" max="1" aria-label="Progresso do trecho"></progress><div class="player-buttons"><button id="previous" class="icon-button" aria-label="Trecho anterior">‹</button><button id="playPause" class="primary play-button">Ouvir leitura</button><button id="next" class="icon-button" aria-label="Próximo trecho">›</button><button id="askButton" class="secondary ask-button">Pausar e perguntar</button></div><button id="phoneFallback" class="link-button" hidden>Continuar com a voz do celular</button></section>
+    </section>
+  </main>
+  <dialog id="settingsDialog" class="settings-dialog"><form id="settingsForm"><div class="dialog-heading"><div><p class="eyebrow">DO SEU JEITO</p><h2>Configurações</h2></div><button type="button" class="icon-button" data-close="settingsDialog" aria-label="Fechar configurações">×</button></div>
+    <p class="small">A Bíblia e a voz do aparelho podem ser usadas sem chave. Para explicações e voz Gemini, conecte sua chave.</p>
+    <label for="apiKey">Chave da API Gemini</label><div class="key-row"><input id="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="Cole sua chave aqui"><button id="showKey" type="button" class="ghost" aria-label="Mostrar chave">Mostrar</button></div>
+    <label class="check"><input type="checkbox" id="rememberKey">Lembrar minha chave neste aparelho</label><p class="small">Desmarcado: a chave fica apenas nesta sessão. Nunca envie a chave ao GitHub. <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Criar uma chave no Google</a></p>
+    <button id="loadModels" type="button" class="secondary">Testar chave e carregar modelos</button><p id="modelsStatus" class="small" role="status"></p>
+    <label for="textModel">Modelo para explicações</label><input id="textModel" list="textModels" value="gemini-2.5-flash" spellcheck="false"><datalist id="textModels"><option value="gemini-2.5-flash"></option><option value="gemini-2.5-flash-lite"></option><option value="gemini-3.8-flash"></option></datalist>
+    <p class="small">Os modelos e as cotas dependem da sua conta. Para evitar cobranças, use uma chave de projeto Free Tier, sem faturamento ativado.</p>
+    <label for="voiceMode">Voz para leitura e respostas</label><select id="voiceMode"><option value="auto">Gemini, com troca automática para o celular</option><option value="phone">Somente a voz do celular</option><option value="gemini">Gemini, perguntar antes de trocar</option></select>
+    <div class="range-grid"><div><label for="ttsModel">Modelo de voz Gemini</label><input id="ttsModel" list="ttsModels" value="gemini-2.5-flash-preview-tts" spellcheck="false"><datalist id="ttsModels"><option value="gemini-2.5-flash-preview-tts"></option><option value="gemini-3.1-flash-tts-preview"></option></datalist></div><div><label for="geminiVoice">Voz Gemini</label><select id="geminiVoice"><option value="Kore">Kore</option><option value="Puck">Puck</option><option value="Charon">Charon</option><option value="Fenrir">Fenrir</option><option value="Aoede">Aoede</option></select></div></div>
+    <label for="phoneVoice">Voz disponível no aparelho</label><select id="phoneVoice"><option value="">Português automático</option></select><div class="range-grid"><div><label for="speechRate">Velocidade</label><select id="speechRate"><option value="0.85">Mais devagar · 0,85×</option><option value="1">Normal · 1×</option><option value="1.15">Um pouco mais rápido · 1,15×</option><option value="1.3">Mais rápido · 1,3×</option></select></div><div><label for="fontSize">Tamanho da leitura</label><select id="fontSize"><option value="20">Normal</option><option value="24">Grande</option><option value="28">Muito grande</option></select></div></div>
+    <label class="check"><input type="checkbox" id="speakAnswers" checked>Ler as explicações em voz alta</label><button id="testVoice" type="button" class="link-button">Testar voz do celular</button>
+    <div class="notice subtle">Ao pedir uma explicação, os trechos necessários e sua pergunta são enviados ao Google. Na faixa gratuita, esses dados podem ser usados para melhorar os produtos do Google.</div>
+    <details class="data-options"><summary>Meus dados e espaço no aparelho</summary><p id="storageInfo" class="small"></p><button id="exportBackup" type="button" class="secondary">Baixar cópia dos estudos e PDFs</button><label class="restore-label" for="restoreBackup">Restaurar uma cópia<input id="restoreBackup" type="file" accept="application/json,.json"></label><button id="clearAudio" type="button" class="link-button">Limpar áudios guardados</button><p class="small">A cópia não inclui sua chave nem os áudios. Guarde-a antes de limpar os dados do navegador.</p></details>
+    <div class="dialog-actions"><button type="button" class="secondary" data-close="settingsDialog">Cancelar</button><button type="submit" class="primary">Salvar configurações</button></div>
+  </form></dialog>
+  <dialog id="questionDialog" class="question-dialog"><div class="dialog-heading"><div><p class="eyebrow">UMA PAUSA PARA ENTENDER</p><h2>Sua dúvida</h2></div><button class="icon-button" data-close="questionDialog" aria-label="Fechar pergunta">×</button></div><p id="questionLocation" class="badge"></p><blockquote id="questionExcerpt"></blockquote><p class="small">A IA considera este trecho e o contexto ao redor. Ela pode errar; confira as referências.</p><div id="conversation" class="conversation" aria-live="polite"></div><form id="questionForm"><label for="questionInput">O que você quer entender?</label><textarea id="questionInput" rows="3" maxlength="4000" placeholder="O que o autor quis dizer aqui?"></textarea><div class="question-actions"><button id="dictate" type="button" class="secondary">Falar pergunta</button><button id="sendQuestion" type="submit" class="primary">Perguntar ao Gemini</button><button id="cancelQuestion" type="button" class="secondary" hidden>Cancelar resposta</button></div><p id="dictateHint" class="small">Você também pode usar o microfone do teclado do celular.</p></form><div class="quick-questions"><button id="explainAgain" class="link-button">Explicar mais simples</button><button id="giveExample" class="link-button">Dar um exemplo</button></div><div class="dialog-actions"><button id="stopAnswer" class="secondary">Parar voz da resposta</button><button id="resumeReading" class="primary">Continuar leitura</button></div></dialog>
+  <div id="toast" class="toast" role="status" hidden></div><noscript>Ative o JavaScript do navegador para usar o Livro Claro.</noscript>
+  <script type="module" src="app.js"></script>
+</body></html>
